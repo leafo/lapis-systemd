@@ -18,7 +18,10 @@ site_name = ->
   site_name = -> name
   name
 
-log = (msg, priority=6) ->
-  lib.sd_journal_send "PRIORITY=#{priority}", "MESSAGE=#{msg}", config.site_name and "SITE=#{site_name!}" or nil
+log = (msg, opts) ->
+  priority = opts and opts.priority or 6
+  name = site_name!
+  commands = { "MESSAGE=#{msg}", "PRIORITY=#{priority}", "SITE=#{name}" }
+  lib.sd_journal_send unpack commands
 
 { :log }
