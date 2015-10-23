@@ -15,20 +15,42 @@ prepare_ini = function(tuples)
     local section = tuples[_index_0]
     local section_name = section[1]
     structure[section_name] = structure[section_name] or { }
+    local items = math.max(unpack((function()
+      local _accum_0 = { }
+      local _len_0 = 1
+      for i in pairs(section) do
+        if type(i) == "number" then
+          _accum_0[_len_0] = i
+          _len_0 = _len_0 + 1
+        end
+      end
+      return _accum_0
+    end)()))
     local section_order
     do
       local _accum_0 = { }
       local _len_0 = 1
-      for i = 2, #section do
-        local key, value
-        do
-          local _obj_0 = section[i]
-          key, value = _obj_0[1], _obj_0[2]
+      for i = 2, items do
+        local _continue_0 = false
+        repeat
+          if not (section[i]) then
+            _continue_0 = true
+            break
+          end
+          local key, value
+          do
+            local _obj_0 = section[i]
+            key, value = _obj_0[1], _obj_0[2]
+          end
+          structure[section_name][key] = value
+          local _value_0 = key
+          _accum_0[_len_0] = _value_0
+          _len_0 = _len_0 + 1
+          _continue_0 = true
+        until true
+        if not _continue_0 then
+          break
         end
-        structure[section_name][key] = value
-        local _value_0 = key
-        _accum_0[_len_0] = _value_0
-        _len_0 = _len_0 + 1
       end
       section_order = _accum_0
     end
@@ -54,14 +76,12 @@ render_service_file = function(config)
   slugify = require("lapis.util").slugify
   local path = require("lapis.cmd.path")
   local service_config = config.systemd or { }
-  local dir = read("pwd")
-  local lapis = read("which lapis")
+  local dir = service_config.dir or read("pwd")
+  local lapis = service_config.lapis_bin or read("which lapis")
   local site_name = service_config.name
   if not (site_name) then
     site_name = slugify(dir:match("[^/]*$") or "app")
   end
-  local lua_path = os.getenv("LUA_PATH")
-  local lua_cpath = os.getenv("LUA_CPATH")
   local service_type
   if config.daemon == "on" then
     service_type = "forking"
@@ -91,10 +111,29 @@ render_service_file = function(config)
         "PIDFile",
         tostring(path.join(dir, "logs/nginx.pid"))
       },
-      {
-        "Environment",
-        "'LUA_PATH=" .. tostring(lua_path) .. "' 'LUA_CPATH=" .. tostring(lua_cpath) .. "'"
-      },
+      (function()
+        if service_config.user == true then
+          return {
+            "User",
+            read("whoami")
+          }
+        elseif service_config.user then
+          return {
+            "User",
+            service_config.user
+          }
+        end
+      end)(),
+      (function()
+        if not (service_config.env == false) then
+          local lua_path = os.getenv("LUA_PATH")
+          local lua_cpath = os.getenv("LUA_CPATH")
+          return {
+            "Environment",
+            "'LUA_PATH=" .. tostring(lua_path) .. "' 'LUA_CPATH=" .. tostring(lua_cpath) .. "'"
+          }
+        end
+      end)(),
       {
         "WorkingDirectory",
         dir

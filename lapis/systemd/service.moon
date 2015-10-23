@@ -12,7 +12,10 @@ prepare_ini = (tuples) ->
     section_name = section[1]
     structure[section_name] or={}
 
-    section_order = for i=2,#section
+    -- let holes through
+    items = math.max unpack [i for i in pairs(section) when type(i) == "number"]
+    section_order = for i=2,items
+      continue unless section[i]
       {key, value} = section[i]
       structure[section_name][key] = value
       key
@@ -38,15 +41,13 @@ render_service_file = (config) ->
 
   service_config = config.systemd or {}
 
-  dir = read "pwd"
-  lapis = read "which lapis"
+  dir = service_config.dir or read "pwd"
+  lapis = service_config.lapis_bin or read "which lapis"
 
   site_name = service_config.name
+
   unless site_name
     site_name = slugify dir\match("[^/]*$") or "app"
-
-  lua_path = os.getenv "LUA_PATH"
-  lua_cpath = os.getenv "LUA_CPATH"
 
   service_type = if config.daemon == "on"
     "forking"
@@ -64,7 +65,17 @@ render_service_file = (config) ->
     {"Service"
       {"Type", service_type}
       {"PIDFile", "#{path.join dir, "logs/nginx.pid"}"}
-      {"Environment", "'LUA_PATH=#{lua_path}' 'LUA_CPATH=#{lua_cpath}'"}
+
+      if service_config.user == true
+        {"User", read "whoami"}
+      elseif service_config.user
+        {"User", service_config.user}
+
+      unless service_config.env == false
+        lua_path = os.getenv "LUA_PATH"
+        lua_cpath = os.getenv "LUA_CPATH"
+        {"Environment", "'LUA_PATH=#{lua_path}' 'LUA_CPATH=#{lua_cpath}'"}
+
       {"WorkingDirectory", dir}
       {"ExecStart", "#{lapis} server #{config._name}"}
       {"ExecReload", "#{lapis} build #{config._name}"}
