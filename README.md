@@ -21,9 +21,6 @@ $ lapis systemd service development
 Will generate a file in the current directory, named after your app:
 `some-app-development.service`
 
-The service file will then automatically be installed into the system via a
-symlink.
-
 The contents might look like this:
 
 ```ini
@@ -51,6 +48,13 @@ service file.
 Since these paths are specific to a machine, it's not recommended to check the
 service files into your respository.
 
+You can generate an install the service file to the system with the following
+command:
+
+```bash
+$ lapis systemd service development --install
+```
+
 You can then start your service:
 
 ```bash
@@ -61,6 +65,21 @@ And view the logs for it:
 
 ```bash
 $ sudo journal -u some-app-development
+```
+
+### Configuring service file
+
+The `systemd` entry in your lapis config can be used to control how the service file is generated:
+
+```lua
+-- config.lua
+local config = require("lapis.config")
+
+config("production", {
+  systemd = {
+    user = "leafo" -- service will run as user
+  }
+})
 ```
 
 ## Writing to logs
