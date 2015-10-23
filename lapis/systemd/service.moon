@@ -4,6 +4,18 @@ read = (cmd) ->
   with f\read("*a")\gsub "%s*$", ""
     f\close!
 
+site_name = (config=require("lapis.config").get!) ->
+  import slugify from require "lapis.util"
+  service_config = config.systemd or {}
+
+  site_name = service_config.name
+
+  unless site_name
+    dir = read "pwd"
+    site_name = slugify dir\match("[^/]*$") or "lapis-app"
+
+  site_name
+
 prepare_ini = (tuples) ->
   structure = {}
   order = {}
@@ -44,21 +56,18 @@ render_service_file = (config) ->
   dir = service_config.dir or read "pwd"
   lapis = service_config.lapis_bin or read "which lapis"
 
-  site_name = service_config.name
-
-  unless site_name
-    site_name = slugify dir\match("[^/]*$") or "app"
+  name = site_name config
 
   service_type = if config.daemon == "on"
     "forking"
   else
     "simple"
 
-  file = slugify("#{site_name} #{config._name}") .. ".service"
+  file = slugify("#{name} #{config._name}") .. ".service"
 
   contents = render_ini {
     {"Unit"
-      {"Description", "#{site_name} #{config._name}"}
+      {"Description", "#{name} #{config._name}"}
       {"After", "network.target"}
     }
 
@@ -88,4 +97,4 @@ render_service_file = (config) ->
 
   contents, file, dir
 
-{ :render_ini, :render_service_file }
+{ :render_ini, :render_service_file, :site_name }

@@ -7,6 +7,21 @@ read = function(cmd)
     return _with_0
   end
 end
+local site_name
+site_name = function(config)
+  if config == nil then
+    config = require("lapis.config").get()
+  end
+  local slugify
+  slugify = require("lapis.util").slugify
+  local service_config = config.systemd or { }
+  site_name = service_config.name
+  if not (site_name) then
+    local dir = read("pwd")
+    site_name = slugify(dir:match("[^/]*$") or "lapis-app")
+  end
+  return site_name
+end
 local prepare_ini
 prepare_ini = function(tuples)
   local structure = { }
@@ -78,23 +93,20 @@ render_service_file = function(config)
   local service_config = config.systemd or { }
   local dir = service_config.dir or read("pwd")
   local lapis = service_config.lapis_bin or read("which lapis")
-  local site_name = service_config.name
-  if not (site_name) then
-    site_name = slugify(dir:match("[^/]*$") or "app")
-  end
+  local name = site_name(config)
   local service_type
   if config.daemon == "on" then
     service_type = "forking"
   else
     service_type = "simple"
   end
-  local file = slugify(tostring(site_name) .. " " .. tostring(config._name)) .. ".service"
+  local file = slugify(tostring(name) .. " " .. tostring(config._name)) .. ".service"
   local contents = render_ini({
     {
       "Unit",
       {
         "Description",
-        tostring(site_name) .. " " .. tostring(config._name)
+        tostring(name) .. " " .. tostring(config._name)
       },
       {
         "After",
@@ -159,5 +171,6 @@ render_service_file = function(config)
 end
 return {
   render_ini = render_ini,
-  render_service_file = render_service_file
+  render_service_file = render_service_file,
+  site_name = site_name
 }
