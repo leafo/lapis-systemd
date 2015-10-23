@@ -1,4 +1,4 @@
-local conf = require("lapis.config")
+local config = require("lapis.config").get()
 local ffi = require("ffi")
 local socket = require("socket")
 ffi.cdef([[int sd_journal_print(int priority, const char *format, ...);

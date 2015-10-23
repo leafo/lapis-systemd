@@ -1,7 +1,7 @@
 -- usage:
 -- journalctl -f SITE=site_name
 
-conf = require "lapis.config"
+config = require("lapis.config").get!
 
 ffi = require "ffi"
 
