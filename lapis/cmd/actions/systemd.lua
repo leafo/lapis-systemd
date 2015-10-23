@@ -4,10 +4,11 @@ return {
   name = "systemd",
   usage = "systemd service [environment]",
   help = "create systemd service files",
-  function(environment)
+  function(command, environment)
     if environment == nil then
       environment = default_environment()
     end
+    assert(command == "service", "must specify `lapis systemd service` as command")
     local config = require("lapis.config").get(environment)
     local path = require("lapis.cmd.path").annotate()
     local render_service_file

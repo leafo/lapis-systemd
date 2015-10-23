@@ -5,7 +5,9 @@ import default_environment from require "lapis.cmd.util"
   usage: "systemd service [environment]"
   help: "create systemd service files"
 
-  (environment=default_environment!) ->
+  (command, environment=default_environment!) ->
+    assert command == "service", "must specify `lapis systemd service` as command"
+
     config = require("lapis.config").get environment
     path = require("lapis.cmd.path").annotate!
 
