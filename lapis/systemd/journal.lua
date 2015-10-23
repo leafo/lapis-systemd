@@ -5,6 +5,13 @@ ffi.cdef([[int sd_journal_print(int priority, const char *format, ...);
 int sd_journal_send(const char *format, ...);
 ]])
 local lib = ffi.load("libsystemd-journal")
+local site_name
+site_name = function()
+  site_name = service_config.name
+  if not (site_name) then
+    site_name = slugify(dir:match("[^/]*$") or "app")
+  end
+end
 local log
 log = function(msg, priority)
   if priority == nil then
