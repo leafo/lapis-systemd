@@ -1,11 +1,17 @@
 import default_environment from require "lapis.cmd.util"
+import parse_flags from require "lapis.cmd.util"
 
 {
   name: "systemd"
-  usage: "systemd service [environment]"
+  usage: "systemd service [environment] [--install]"
   help: "create systemd service files"
 
-  (command, environment=default_environment!) ->
+  (...) ->
+    flags, args = parse_flags { ... }
+    { command, environment } = args
+
+    environment or= default_environment!
+
     assert command == "service", "must specify `lapis systemd service` as command"
 
     config = require("lapis.config").get environment
@@ -17,12 +23,13 @@ import default_environment from require "lapis.cmd.util"
 
     path.write_file file, contents
 
-    src = path.shell_escape "#{dir}/#{file}"
-    dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
+    if flags.install
+      src = path.shell_escape "#{dir}/#{file}"
+      dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
 
-    if path.exists dest
-      path.exec "sudo rm '#{dest}'"
+      if path.exists dest
+        path.exec "sudo rm '#{dest}'"
 
-    path.exec "sudo ln -s '#{src}' '#{dest}'"
-    path.exec "sudo systemctl daemon-reload"
+      path.exec "sudo ln -s '#{src}' '#{dest}'"
+      path.exec "sudo systemctl daemon-reload"
 }
