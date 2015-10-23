@@ -27,9 +27,6 @@ import parse_flags from require "lapis.cmd.util"
       src = path.shell_escape "#{dir}/#{file}"
       dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
 
-      if path.exists dest
-        path.exec "sudo rm '#{dest}'"
-
-      path.exec "sudo ln -s '#{src}' '#{dest}'"
+      path.exec "sudo cp '#{src}' '#{dest}'"
       path.exec "sudo systemctl daemon-reload"
 }
