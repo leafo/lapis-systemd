@@ -48,7 +48,7 @@ service file.
 Since these paths are specific to a machine, it's not recommended to check the
 service files into your respository.
 
-You can generate an install the service file to the system with the following
+You can generate and install the service file to the system with the following
 command:
 
 ```bash
