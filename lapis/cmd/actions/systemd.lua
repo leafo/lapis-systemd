@@ -6,7 +6,7 @@ return {
   name = "systemd",
   usage = "systemd service [environment] [--install]",
   help = "create systemd service files",
-  function(...)
+  function(self, ...)
     local flags, args = parse_flags({
       ...
     })

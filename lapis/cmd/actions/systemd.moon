@@ -6,7 +6,7 @@ import parse_flags from require "lapis.cmd.util"
   usage: "systemd service [environment] [--install]"
   help: "create systemd service files"
 
-  (...) ->
+  (...) =>
     flags, args = parse_flags { ... }
     { command, environment } = args
 
