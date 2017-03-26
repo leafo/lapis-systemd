@@ -6,12 +6,7 @@ return {
   name = "systemd",
   usage = "systemd service [environment] [--install]",
   help = "create systemd service files",
-  function(self, ...)
-    local flags, args = parse_flags({
-      ...
-    })
-    local command, environment
-    command, environment = args[1], args[2]
+  function(self, flags, command, environment)
     environment = environment or default_environment()
     assert(command == "service", "must specify `lapis systemd service` as command")
     local config = require("lapis.config").get(environment)
