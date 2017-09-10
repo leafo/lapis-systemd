@@ -10,7 +10,7 @@ ffi.cdef [[
   int sd_journal_send(const char *format, ...);
 ]]
 
-lib = ffi.load "libsystemd-journal"
+lib = ffi.load "systemd"
 
 site_name = ->
   service = require "lapis.systemd.service"

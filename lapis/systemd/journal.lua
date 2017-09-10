@@ -3,7 +3,7 @@ local socket = require("socket")
 ffi.cdef([[  int sd_journal_print(int priority, const char *format, ...);
   int sd_journal_send(const char *format, ...);
 ]])
-local lib = ffi.load("libsystemd-journal")
+local lib = ffi.load("systemd")
 local site_name
 site_name = function()
   local service = require("lapis.systemd.service")
