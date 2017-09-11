@@ -1,5 +1,6 @@
 local ffi = require("ffi")
 local socket = require("socket")
+local config = require("lapis.config")
 ffi.cdef([[  int sd_journal_print(int priority, const char *format, ...);
   int sd_journal_send(const char *format, ...);
 ]])
@@ -15,6 +16,9 @@ site_name = function()
 end
 local log
 log = function(msg, opts)
+  if not (config.systemd and config.systemd.journal) then
+    return 
+  end
   local priority = opts and opts.priority or 6
   local name = site_name()
   local commands = {

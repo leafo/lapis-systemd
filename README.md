@@ -82,6 +82,22 @@ config("production", {
 })
 ```
 
+If you want to enable journal log writes (when using the `log` function in
+`lapis.systemd.journal`) then you can set `journal = true` in systmed config
+block:
+
+```lua
+-- config.lua
+local config = require("lapis.config")
+
+config("production", {
+  systemd = {
+    user = "leafo",
+    journal = true
+  }
+})
+```
+
 ## Writing to logs
 
 You can access the systemd journal with the `lapis.systemd.journal` module:
