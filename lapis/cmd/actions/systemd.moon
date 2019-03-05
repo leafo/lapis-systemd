@@ -3,7 +3,7 @@ import parse_flags from require "lapis.cmd.util"
 
 {
   name: "systemd"
-  usage: "systemd service [environment] [--install]"
+  usage: "systemd service [environment] [--link]"
   help: "create systemd service files"
 
   (flags, command, environment) =>
@@ -20,10 +20,9 @@ import parse_flags from require "lapis.cmd.util"
 
     path.write_file file, contents
 
-    if flags.install
+    if flags.link
       src = path.shell_escape "#{dir}/#{file}"
-      dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
 
-      path.exec "sudo cp '#{src}' '#{dest}'"
+      path.exec "sudo systemctl link '#{src}'"
       path.exec "sudo systemctl daemon-reload"
 }

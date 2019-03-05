@@ -4,7 +4,7 @@ local parse_flags
 parse_flags = require("lapis.cmd.util").parse_flags
 return {
   name = "systemd",
-  usage = "systemd service [environment] [--install]",
+  usage = "systemd service [environment] [--link]",
   help = "create systemd service files",
   function(self, flags, command, environment)
     environment = environment or default_environment()
@@ -15,10 +15,9 @@ return {
     render_service_file = require("lapis.systemd.service").render_service_file
     local contents, file, dir = render_service_file(config)
     path.write_file(file, contents)
-    if flags.install then
+    if flags.link then
       local src = path.shell_escape(tostring(dir) .. "/" .. tostring(file))
-      local dest = path.shell_escape("/usr/lib/systemd/system/" .. tostring(file))
-      path.exec("sudo cp '" .. tostring(src) .. "' '" .. tostring(dest) .. "'")
+      path.exec("sudo systemctl link '" .. tostring(src) .. "'")
       return path.exec("sudo systemctl daemon-reload")
     end
   end
