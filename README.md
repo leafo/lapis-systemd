@@ -48,11 +48,11 @@ service file.
 Since these paths are specific to a machine, it's not recommended to check the
 service files into your respository.
 
-You can generate and install the service file to the system with the following
+You can generate and link the service file to the system with the following
 command:
 
 ```bash
-$ lapis systemd service development --install
+$ lapis systemd service development --link
 ```
 
 You can then start your service:
@@ -106,4 +106,3 @@ You can access the systemd journal with the `lapis.systemd.journal` module:
 journal = require("lapis.systemd.journal")
 journal.log("hello world!", {priority = 5})
 ```
-
