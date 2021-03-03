@@ -49,7 +49,8 @@ Since these paths are specific to a machine, it's not recommended to check the
 service files into your respository.
 
 You can generate and install the service file to the system with the following
-command:
+command: **(Do not run this command with sudo, it will call sudo for you when
+copying the necessary file.)**
 
 ```bash
 $ lapis systemd service development --install
