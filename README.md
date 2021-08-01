@@ -65,7 +65,7 @@ $ sudo systemctl start some-app-development
 And view the logs for it:
 
 ```bash
-$ sudo journal -u some-app-development
+$ sudo journalctl -u some-app-development
 ```
 
 ### Configuring service file
