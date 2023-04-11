@@ -1,29 +1,47 @@
 import default_environment from require "lapis.cmd.util"
 import parse_flags from require "lapis.cmd.util"
 
+parsed_args = false
+
 {
-  name: "systemd"
-  usage: "systemd service [environment] [--install]"
-  help: "create systemd service files"
+  argparser: ->
+    parsed_args = true
 
-  (flags, command, environment) =>
-    environment or= default_environment!
+    parser = require("argparse") "lapis systemd", "Manage systemd integration for lapis app"
+    parser\command_target "command"
 
-    assert command == "service", "must specify `lapis systemd service` as command"
+    with parser\command "service", "Generate service file"
+      \argument("environment", "Environment to generate service file for (overrides --environment)")\args("?")
+      \flag "--install", "Installs the service file to the system, requires sudo permission"
 
-    config = require("lapis.config").get environment
-    path = require("lapis.cmd.path").annotate!
+    parser\add_help_command!
 
-    import render_service_file from require "lapis.systemd.service"
+    parser
 
-    contents, file, dir = render_service_file config
+  (args, lapis_args) =>
+    assert parsed_args,
+      "The version of Lapis you are using does not support this version of lapis-systemd. Please upgrade Lapis ≥ v1.14.0"
 
-    path.write_file file, contents
+    switch args.command
+      when "service"
+        environment = args.environment or lapis_args.environment
 
-    if flags.install
-      src = path.shell_escape "#{dir}/#{file}"
-      dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
+        config = @get_config environment
 
-      path.exec "sudo cp '#{src}' '#{dest}'"
-      path.exec "sudo systemctl daemon-reload"
+        path = require("lapis.cmd.path").annotate!
+
+        import render_service_file from require "lapis.systemd.service"
+
+        contents, file, dir = render_service_file config
+
+        path.write_file file, contents
+
+        if args.install
+          src = path.shell_escape "#{dir}/#{file}"
+          dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
+
+          path.exec "sudo cp '#{src}' '#{dest}'"
+          path.exec "sudo systemctl daemon-reload"
+      else
+        error "Unhandled command: #{args.command}"
 }
