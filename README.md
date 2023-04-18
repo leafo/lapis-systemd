@@ -9,6 +9,23 @@ files for your websites and log to the systemd journal easily.
 $ luarocks install lapis-systemd
 ```
 
+## Usage
+
+
+```bash
+$ lapis systemd service --help
+Usage: lapis systemd service [-h] [--install] [<environment>]
+
+Generate service file
+
+Arguments:
+   environment           Environment to generate service file for (overrides --environment)
+
+Options:
+   -h, --help            Show this help message and exit.
+   --install             Installs the service file to the system, requires sudo permission
+```
+
 ## Creating service files
 
 You can use the new `systemd` command to generate service files for different
@@ -107,4 +124,21 @@ You can access the systemd journal with the `lapis.systemd.journal` module:
 journal = require("lapis.systemd.journal")
 journal.log("hello world!", {priority = 5})
 ```
+
+## Reading logs
+
+This will loop forever listening for new log messages.
+
+```lua
+local j = require("lapis.systemd.journal")
+
+for entry in j.listen() do 
+  print("Got entry:")
+  for k, v in pairs(entry) do
+    print(""k k,v)
+  end
+end
+```
+
+
 
