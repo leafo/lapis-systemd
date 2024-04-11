@@ -132,12 +132,17 @@ at the time of the service file's generation.
 The `env` option allows you specify the environment variables for the service.
 The value of `env` can either be a string, a table, or a boolean.
 
+By default systemd service files have a minimal `PATH` and no other environment
+variables set. Any environment variables that are needed by your application
+should be assigned in the service file.
+
 If `env` is not set, it will default to copying the environment variables
 `"PATH", "LUA_PATH", "LUA_CPATH"`. To avoid this default behavior set `env` to
 false to skip setting environment variables in the service file, or manually
 specify the value:
 
-If `env` is a table, it can contain two types of entries, each representing how to set the environment variable:
+If `env` is a table, it can contain two types of entries, each representing how
+to set the environment variable:
 
 - Array entries: These are treated as names of environment variables that
   should be copied from the current shell environment.
