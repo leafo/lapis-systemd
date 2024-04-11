@@ -12,7 +12,10 @@ parsed_args = false
 
     with parser\command "service", "Generate service file"
       \argument("environment", "Environment to generate service file for (overrides --environment)")\args("?")
-      \flag "--install", "Installs the service file to the system, requires sudo permission"
+      \mutex(
+        \flag "--install", "Installs the service file to the system, requires sudo permission"
+        \flag "--print -p", "Print the service file to stdout instead of writing it"
+      )
 
     parser\add_help_command!
 
@@ -34,14 +37,17 @@ parsed_args = false
 
         contents, file, dir = render_service_file config
 
-        path.write_file file, contents
+        if args.print
+          print contents
+        else
+          path.write_file file, contents
 
-        if args.install
-          src = path.shell_escape "#{dir}/#{file}"
-          dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
+          if args.install
+            src = path.shell_escape "#{dir}/#{file}"
+            dest = path.shell_escape "/usr/lib/systemd/system/#{file}"
 
-          path.exec "sudo cp '#{src}' '#{dest}'"
-          path.exec "sudo systemctl daemon-reload"
+            path.exec "sudo cp '#{src}' '#{dest}'"
+            path.exec "sudo systemctl daemon-reload"
       else
         error "Unhandled command: #{args.command}"
 }

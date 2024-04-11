@@ -15,7 +15,8 @@ $ luarocks install lapis-systemd
 
 ```bash
 $ lapis systemd service --help
-Usage: lapis systemd service [-h] [--install] [<environment>]
+Usage: lapis systemd service ([--install] | [--print]) [-h]
+       [<environment>]
 
 Generate service file
 
@@ -25,6 +26,7 @@ Arguments:
 Options:
    -h, --help            Show this help message and exit.
    --install             Installs the service file to the system, requires sudo permission
+   --print, -p           Print the service file to stdout instead of writing it
 ```
 
 ## Creating service files

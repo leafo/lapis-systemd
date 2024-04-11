@@ -11,7 +11,7 @@ return {
     do
       local _with_0 = parser:command("service", "Generate service file")
       _with_0:argument("environment", "Environment to generate service file for (overrides --environment)"):args("?")
-      _with_0:flag("--install", "Installs the service file to the system, requires sudo permission")
+      _with_0:mutex(_with_0:flag("--install", "Installs the service file to the system, requires sudo permission"), _with_0:flag("--print -p", "Print the service file to stdout instead of writing it"))
     end
     parser:add_help_command()
     return parser
@@ -26,12 +26,16 @@ return {
       local render_service_file
       render_service_file = require("lapis.systemd.service").render_service_file
       local contents, file, dir = render_service_file(config)
-      path.write_file(file, contents)
-      if args.install then
-        local src = path.shell_escape(tostring(dir) .. "/" .. tostring(file))
-        local dest = path.shell_escape("/usr/lib/systemd/system/" .. tostring(file))
-        path.exec("sudo cp '" .. tostring(src) .. "' '" .. tostring(dest) .. "'")
-        return path.exec("sudo systemctl daemon-reload")
+      if args.print then
+        return print(contents)
+      else
+        path.write_file(file, contents)
+        if args.install then
+          local src = path.shell_escape(tostring(dir) .. "/" .. tostring(file))
+          local dest = path.shell_escape("/usr/lib/systemd/system/" .. tostring(file))
+          path.exec("sudo cp '" .. tostring(src) .. "' '" .. tostring(dest) .. "'")
+          return path.exec("sudo systemctl daemon-reload")
+        end
       end
     else
       return error("Unhandled command: " .. tostring(args.command))
