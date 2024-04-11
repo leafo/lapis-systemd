@@ -75,9 +75,12 @@ do
           lib.sd_journal_add_match(journal, match, #match)
         end
       end
-      if self.config.filter_unit then
-        local match = "_SYSTEMD_UNIT=" .. unit_name
-        lib.sd_journal_add_match(journal, match, #match)
+      do
+        local unit_name = self.config.filter_unit
+        if unit_name then
+          local match = "_SYSTEMD_UNIT=" .. unit_name
+          lib.sd_journal_add_match(journal, match, #match)
+        end
       end
       lib.sd_journal_seek_tail(journal)
       lib.sd_journal_previous(journal)

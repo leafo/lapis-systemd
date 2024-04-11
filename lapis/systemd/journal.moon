@@ -76,7 +76,7 @@ class JournalReader
       match = "SITE=" .. name
       lib.sd_journal_add_match journal, match, #match
 
-    if @config.filter_unit
+    if unit_name = @config.filter_unit
       match = "_SYSTEMD_UNIT=" .. unit_name
       lib.sd_journal_add_match journal, match, #match
 
