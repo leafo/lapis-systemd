@@ -1,3 +1,8 @@
+local default_env_variables = {
+  "PATH",
+  "LUA_PATH",
+  "LUA_CPATH"
+}
 local read
 read = function(cmd)
   local f = io.popen(cmd)
@@ -87,7 +92,7 @@ render_ini = function(tuples)
   return inifile.save("", tbl, "memory")
 end
 local render_service_file
-render_service_file = function(config)
+render_service_file = function(config, args)
   local slugify
   slugify = require("lapis.util").slugify
   local path = require("lapis.cmd.path")
@@ -139,12 +144,33 @@ render_service_file = function(config)
       end)(),
       (function()
         if not (service_config.env == false) then
-          local env_path = os.getenv("PATH")
-          local env_lua_path = os.getenv("LUA_PATH")
-          local env_lua_cpath = os.getenv("LUA_CPATH")
+          local env_names
+          local _exp_0 = type(service_config.env)
+          if "string" == _exp_0 then
+            env_names = {
+              service_config.env
+            }
+          elseif "table" == _exp_0 then
+            env_names = service_config.env
+          else
+            env_names = default_env_variables
+          end
+          local env_parts
+          do
+            local _accum_0 = { }
+            local _len_0 = 1
+            for _index_0 = 1, #env_names do
+              local env_name = env_names[_index_0]
+              local env_value = os.getenv(env_name)
+              local _value_0 = "'" .. tostring(env_name) .. "=" .. tostring(env_value) .. "'"
+              _accum_0[_len_0] = _value_0
+              _len_0 = _len_0 + 1
+            end
+            env_parts = _accum_0
+          end
           return {
             "Environment",
-            "'PATH=" .. tostring(env_path) .. "' 'LUA_PATH=" .. tostring(env_lua_path) .. "' 'LUA_CPATH=" .. tostring(env_lua_cpath) .. "'"
+            table.concat(env_parts, " ")
           }
         end
       end)(),

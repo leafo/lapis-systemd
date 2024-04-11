@@ -28,7 +28,7 @@ Options:
 
 ## Creating service files
 
-You can use the new `systemd` command to generate service files for different
+You can use the new `service` command to generate service files for different
 environments. From your shell:
 
 ```bash
@@ -48,7 +48,7 @@ After=network.target
 [Service]
 Type=simple
 PIDFile=/home/leafo/code/sites/itch.io/logs/nginx.pid
-Environment='LUA_PATH=;;/home/leafo/.luarocks/share/lua/5.1/?.lua;/home/leafo/.luarocks/share/lua/5.1/?/init.lua' 'LUA_CPATH=;;/home/leafo/.luarocks/lib/lua/5.1/?.so'
+Environment='PATH=/home/leafo/.luarocks/bin:/usr/bin' 'LUA_PATH=;;/home/leafo/.luarocks/share/lua/5.1/?.lua;/home/leafo/.luarocks/share/lua/5.1/?/init.lua' 'LUA_CPATH=;;/home/leafo/.luarocks/lib/lua/5.1/?.so'
 WorkingDirectory=/home/leafo/code/sites/itch.io
 ExecStart=/home/leafo/.luarocks/bin/lapis server development
 ExecReload=/home/leafo/.luarocks/bin/lapis build development
@@ -57,17 +57,23 @@ ExecReload=/home/leafo/.luarocks/bin/lapis build development
 WantedBy=multi-user.target
 ```
 
-Note that the path of your project is hard-coded into the service, along with
-the path of the `lapis` binary and any Lua environment variables. If you ever
-move the project around or reconfigure your system you should regenerate the
-service file.
+The service generation command will copy certain environment variables from the
+current shell and embed them directly into the service file. This ensures that
+the running service will have the same visibility as the shell from which you
+are running the command. The following environment variables are embedded:
 
-Since these paths are specific to a machine, it's not recommended to check the
-service files into your respository.
+- `PATH`
+- `LUA_PATH`
+- `LUA_CPATH`
 
-You can generate and install the service file to the system with the following
-command: **(Do not run this command with sudo, it will call sudo for you when
-copying the necessary file.)**
+Because of these hard-coded paths, it is not recommended to check the generated
+service files into your repository. If you ever move the project or reconfigure
+your system, you should regenerate the service file.
+
+You can generate and install the service file to the system using the following
+command: **(Do not run this command with sudo, as it will invoke sudo for you
+when copying the necessary file. Executing it with sudo could result in a
+service file with incorrect environment variables embedded)**
 
 ```bash
 $ lapis systemd service development --install
@@ -87,7 +93,7 @@ $ sudo journal -u some-app-development
 
 ### Configuring service file
 
-The `systemd` entry in your lapis config can be used to control how the service file is generated:
+The service file is configured from the `systemd` block within your Lapis configuration. This simplifies the generation of a service file based on the environment using a single, consistent command.
 
 ```lua
 -- config.lua
@@ -100,22 +106,6 @@ config("production", {
 })
 ```
 
-If you want to enable journal log writes (when using the `log` function in
-`lapis.systemd.journal`) then you can set `journal = true` in systmed config
-block:
-
-```lua
--- config.lua
-local config = require("lapis.config")
-
-config("production", {
-  systemd = {
-    user = "leafo",
-    journal = true
-  }
-})
-```
-
 ## Writing to logs
 
 You can access the systemd journal with the `lapis.systemd.journal` module:
@@ -123,6 +113,25 @@ You can access the systemd journal with the `lapis.systemd.journal` module:
 ```lua
 journal = require("lapis.systemd.journal")
 journal.log("hello world!", {priority = 5})
+```
+
+Note this will only work if the `journal` config option is set to a truthy value.
+
+### Journal Configuration
+
+The log method will be a no-op unless the `journal` config option is set to a
+truthy value. This will allow you to conditionally write to the journal based
+on the Lapis environment.
+
+```lua
+-- config.lua
+local config = require("lapis.config")
+
+config("production", {
+  systemd = {
+    journal = true
+  }
+})
 ```
 
 ## Reading logs

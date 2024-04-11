@@ -1,6 +1,6 @@
 
 describe "lapis.systemd.service", ->
-  it "should render a basic service file", ->
+  it "renders a basic service file", ->
     import render_service_file from require "lapis.systemd.service"
     contents, fname = render_service_file {
       _name: "development"
@@ -30,6 +30,5 @@ ExecReload=/user/bin/lapis build development
 [Install]
 WantedBy=multi-user.target
 ]], contents
-
 
 

@@ -1,4 +1,7 @@
 
+-- default list of environment variables to copy
+default_env_variables = {"PATH", "LUA_PATH", "LUA_CPATH"}
+
 read = (cmd) ->
   f = io.popen cmd
   with f\read("*a")\gsub "%s*$", ""
@@ -47,7 +50,7 @@ render_ini = (tuples) ->
   inifile = require "inifile"
   inifile.save "", tbl, "memory"
 
-render_service_file = (config) ->
+render_service_file = (config, args) ->
   import slugify from require "lapis.util"
   path = require "lapis.cmd.path"
 
@@ -81,10 +84,19 @@ render_service_file = (config) ->
         {"User", service_config.user}
 
       unless service_config.env == false
-        env_path = os.getenv "PATH"
-        env_lua_path = os.getenv "LUA_PATH"
-        env_lua_cpath = os.getenv "LUA_CPATH"
-        {"Environment", "'PATH=#{env_path}' 'LUA_PATH=#{env_lua_path}' 'LUA_CPATH=#{env_lua_cpath}'"}
+        env_names = switch type service_config.env
+          when "string"
+            {service_config.env}
+          when "table"
+            service_config.env
+          else
+            default_env_variables
+
+        env_parts = for env_name in *env_names
+          env_value = os.getenv env_name
+          "'#{env_name}=#{env_value}'"
+
+        {"Environment", table.concat env_parts, " "}
 
       {"WorkingDirectory", dir}
       {"ExecStart", "#{lapis} server #{config._name}"}
