@@ -1,7 +1,8 @@
 # lapis-systemd
 
-`lapis-systemd` is a lapis extension that lets you create `systemd` service
-files for your websites and log to the systemd journal easily.
+`lapis-systemd` is a Lapis extension that lets you create `systemd` service
+files for your Lapis applications. It also provides a minimal module to work
+with the systemd journal.
 
 ## Install
 
@@ -28,8 +29,8 @@ Options:
 
 ## Creating service files
 
-You can use the new `service` command to generate service files for different
-environments. From your shell:
+The `service` command generates service files based on the environment
+configuration. From your shell:
 
 ```bash
 $ lapis systemd service development
@@ -57,10 +58,10 @@ ExecReload=/home/leafo/.luarocks/bin/lapis build development
 WantedBy=multi-user.target
 ```
 
-The service generation command will copy certain environment variables from the
+By default, service command will copy certain environment variables from the
 current shell and embed them directly into the service file. This ensures that
-the running service will have the same visibility as the shell from which you
-are running the command. The following environment variables are embedded:
+Lapis is run as if you had launched it directly from your shell. The following
+environment variables are embedded by default:
 
 - `PATH`
 - `LUA_PATH`
@@ -71,13 +72,15 @@ service files into your repository. If you ever move the project or reconfigure
 your system, you should regenerate the service file.
 
 You can generate and install the service file to the system using the following
-command: **(Do not run this command with sudo, as it will invoke sudo for you
-when copying the necessary file. Executing it with sudo could result in a
-service file with incorrect environment variables embedded)**
+command:
 
 ```bash
 $ lapis systemd service development --install
 ```
+
+**Do not run this command with sudo, as it will invoke sudo for you when
+copying the necessary file. Executing it with sudo could result in a service
+file with incorrect environment variables embedded**
 
 You can then start your service:
 
@@ -99,12 +102,12 @@ environment using a single, consistent command.
 
 ### `user`
 
-The `user` option in the `systemd` configuration block defines the user under
-which the service will run. This can be particularly useful if you need the
-service to have specific permissions that are associated with a certain user.
+The `user` option specifies the user under which the service will run. This can
+be particularly useful if you need the service to have specific permissions
+that are associated with a certain user.
 
-If the `user` option is not provided in the `systemd` configuration block, the
-service will not specify a user will run under the default user of the system.
+If the `user` option is not provided,  the service will not specify a user will
+run under the default user of the system.
 
 In the configuration example below, the service will run as the user "leafo".
 
