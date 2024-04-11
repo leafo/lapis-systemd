@@ -14,7 +14,9 @@ jobs:
     - name: Set up LuaRocks
       uses: leafo/gh-actions-luarocks@v4
     - name: Install dependencies
-      run: luarocks install busted
+      run: |
+        luarocks make --only-deps lapis-systemd-dev-1.rockspec
+        luarocks install busted
     - name: Install MoonScript
       run: luarocks install moonscript
     - name: Run tests
