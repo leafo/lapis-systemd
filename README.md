@@ -93,7 +93,20 @@ $ sudo journal -u some-app-development
 
 ### Configuring service file
 
-The service file is configured from the `systemd` block within your Lapis configuration. This simplifies the generation of a service file based on the environment using a single, consistent command.
+The service file is configured from the `systemd` block within your Lapis
+configuration. This simplifies the generation of a service file based on the
+environment using a single, consistent command.
+
+### `user`
+
+The `user` option in the `systemd` configuration block defines the user under
+which the service will run. This can be particularly useful if you need the
+service to have specific permissions that are associated with a certain user.
+
+If the `user` option is not provided in the `systemd` configuration block, the
+service will not specify a user will run under the default user of the system.
+
+In the configuration example below, the service will run as the user "leafo".
 
 ```lua
 -- config.lua
@@ -105,6 +118,67 @@ config("production", {
   }
 })
 ```
+
+If `user` is set to `true`, the name of the current user will be used. Note
+that the user is embedded into the service file at the time of its creation and
+is not dynamically determined at runtime. The user is determined via `whoami`
+at the time of the service file's generation.
+
+### `env`
+
+The `env` option allows you specify the environment variables for the service.
+The value of `env` can either be a string, a table, or a boolean.
+
+If `env` is not set, it will default to copying the environment variables
+`"PATH", "LUA_PATH", "LUA_CPATH"`. To avoid this default behavior set `env` to
+false to skip setting environment variables in the service file, or manually
+specify the value:
+
+If `env` is a table, it can contain two types of entries, each representing how to set the environment variable:
+
+- Array entries: These are treated as names of environment variables that
+  should be copied from the current shell environment.
+- Key-value pairs: These represent environment variables that should be set
+  directly, with the key as the variable name and the value as the variable
+  value.
+
+(If `env` is a string, it is considered used as a single name of the environment variable to copy)
+
+For example:
+
+If you want to set the environment variable `PORT` to `8080` and copy the
+environment variable `DATABASE_URL`, you could use the following configuration:
+
+```lua
+-- config.lua
+local config = require("lapis.config")
+
+config("production", {
+  systemd = {
+    env = {
+      PORT = 8080,
+      "DATABASE_URL"
+    }
+  }
+})
+```
+### `name`
+
+The `name` option allowed for manual control of the name of the systemd
+service.
+
+If not set, the name is auto-generated from the last part of the current
+directory name. For example, `/home/user/my-app` would default to `my-app`.
+
+### `dir`
+
+The `dir` option sets the service's working directory. If not set, it defaults
+to the directory at the service file's generation time using `pwd`.
+
+### `lapis_bin`
+
+The `lapis_bin` option sets the location of the Lapis executable. If not set,
+it defaults to the location returned by the command `which lapis`.
 
 ## Writing to logs
 
@@ -141,13 +215,11 @@ This will loop forever listening for new log messages.
 ```lua
 local j = require("lapis.systemd.journal")
 
-for entry in j.listen() do 
+for entry in j.listen() do
   print("Got entry:")
   for k, v in pairs(entry) do
     print(""k k,v)
   end
 end
 ```
-
-
 
