@@ -139,11 +139,12 @@ render_service_file = function(config)
       end)(),
       (function()
         if not (service_config.env == false) then
-          local lua_path = os.getenv("LUA_PATH")
-          local lua_cpath = os.getenv("LUA_CPATH")
+          local env_path = os.getenv("PATH")
+          local env_lua_path = os.getenv("LUA_PATH")
+          local env_lua_cpath = os.getenv("LUA_CPATH")
           return {
             "Environment",
-            "'LUA_PATH=" .. tostring(lua_path) .. "' 'LUA_CPATH=" .. tostring(lua_cpath) .. "'"
+            "'PATH=" .. tostring(env_path) .. "' 'LUA_PATH=" .. tostring(env_lua_path) .. "' 'LUA_CPATH=" .. tostring(env_lua_cpath) .. "'"
           }
         end
       end)(),

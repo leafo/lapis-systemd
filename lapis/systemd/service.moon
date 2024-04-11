@@ -81,9 +81,10 @@ render_service_file = (config) ->
         {"User", service_config.user}
 
       unless service_config.env == false
-        lua_path = os.getenv "LUA_PATH"
-        lua_cpath = os.getenv "LUA_CPATH"
-        {"Environment", "'LUA_PATH=#{lua_path}' 'LUA_CPATH=#{lua_cpath}'"}
+        env_path = os.getenv "PATH"
+        env_lua_path = os.getenv "LUA_PATH"
+        env_lua_cpath = os.getenv "LUA_CPATH"
+        {"Environment", "'PATH=#{env_path}' 'LUA_PATH=#{env_lua_path}' 'LUA_CPATH=#{env_lua_cpath}'"}
 
       {"WorkingDirectory", dir}
       {"ExecStart", "#{lapis} server #{config._name}"}
