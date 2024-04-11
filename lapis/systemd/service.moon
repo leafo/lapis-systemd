@@ -1,6 +1,6 @@
 
 -- default list of environment variables to copy
-default_env_variables = {"PATH", "LUA_PATH", "LUA_CPATH"}
+DEFAULT_ENV_VARIABLES = {"PATH", "LUA_PATH", "LUA_CPATH"}
 
 read = (cmd) ->
   f = io.popen cmd
@@ -11,13 +11,13 @@ site_name = (config=require("lapis.config").get!) ->
   import slugify from require "lapis.util"
   service_config = config.systemd or {}
 
-  site_name = service_config.name
+  name = service_config.name
 
-  unless site_name
+  unless name
     dir = read "pwd"
-    site_name = slugify dir\match("[^/]*$") or "lapis-app"
+    name = slugify dir\match("[^/]*$") or "lapis-app"
 
-  site_name
+  name
 
 prepare_ini = (tuples) ->
   structure = {}
@@ -60,6 +60,7 @@ render_service_file = (config, args) ->
   lapis = service_config.lapis_bin or read "which lapis"
 
   name = site_name config
+  assert name, "failed to determine service name, please set name directly in config.systemd.name"
 
   service_type = if config.daemon == "on"
     "forking"
@@ -90,10 +91,15 @@ render_service_file = (config, args) ->
           when "table"
             service_config.env
           else
-            default_env_variables
+            DEFAULT_ENV_VARIABLES
 
-        env_parts = for env_name in *env_names
-          env_value = os.getenv env_name
+        -- array entries are copied from the environment, k,v entries are set directly
+        env_parts = for env_k, env_v in pairs env_names
+          env_name, env_value = if type(env_k) == "number"
+            env_v, os.getenv env_v
+          else
+            env_k, env_v
+
           "'#{env_name}=#{env_value}'"
 
         {"Environment", table.concat env_parts, " "}

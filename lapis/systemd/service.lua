@@ -1,4 +1,4 @@
-local default_env_variables = {
+local DEFAULT_ENV_VARIABLES = {
   "PATH",
   "LUA_PATH",
   "LUA_CPATH"
@@ -20,12 +20,12 @@ site_name = function(config)
   local slugify
   slugify = require("lapis.util").slugify
   local service_config = config.systemd or { }
-  site_name = service_config.name
-  if not (site_name) then
+  local name = service_config.name
+  if not (name) then
     local dir = read("pwd")
-    site_name = slugify(dir:match("[^/]*$") or "lapis-app")
+    name = slugify(dir:match("[^/]*$") or "lapis-app")
   end
-  return site_name
+  return name
 end
 local prepare_ini
 prepare_ini = function(tuples)
@@ -100,6 +100,7 @@ render_service_file = function(config, args)
   local dir = service_config.dir or read("pwd")
   local lapis = service_config.lapis_bin or read("which lapis")
   local name = site_name(config)
+  assert(name, "failed to determine service name, please set name directly in config.systemd.name")
   local service_type
   if config.daemon == "on" then
     service_type = "forking"
@@ -153,15 +154,19 @@ render_service_file = function(config, args)
           elseif "table" == _exp_0 then
             env_names = service_config.env
           else
-            env_names = default_env_variables
+            env_names = DEFAULT_ENV_VARIABLES
           end
           local env_parts
           do
             local _accum_0 = { }
             local _len_0 = 1
-            for _index_0 = 1, #env_names do
-              local env_name = env_names[_index_0]
-              local env_value = os.getenv(env_name)
+            for env_k, env_v in pairs(env_names) do
+              local env_name, env_value
+              if type(env_k) == "number" then
+                env_name, env_value = env_v, os.getenv(env_v)
+              else
+                env_name, env_value = env_k, env_v
+              end
               local _value_0 = "'" .. tostring(env_name) .. "=" .. tostring(env_value) .. "'"
               _accum_0[_len_0] = _value_0
               _len_0 = _len_0 + 1
